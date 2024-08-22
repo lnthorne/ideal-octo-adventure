@@ -1,17 +1,17 @@
 // app/home/index.tsx
 import { getUser } from "@/services/user";
-import { IUser } from "@/typings/user.inter";
+import { IHomeOwnerEntity, UserType } from "@/typings/user.inter";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 
 export default function HomeScreen() {
-	const [userData, setUserData] = useState<IUser | null>();
+	const [userData, setUserData] = useState<IHomeOwnerEntity | null>();
 	const [loading, setLoading] = useState(true);
 	useEffect(() => {
 		const fetchUser = async () => {
 			setLoading(true);
 			try {
-				const user = await getUser();
+				const user = await getUser<IHomeOwnerEntity>(UserType.homeowner);
 				if (!user) {
 					return;
 				}

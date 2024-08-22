@@ -14,9 +14,10 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import { CreateNewPost } from "@/services/post";
 import * as ImagePicker from "expo-image-picker";
-import { IPostText } from "@/typings/post.inter";
+import { IPost, JobStatus } from "@/typings/jobs.inter";
 import { getUser } from "@/services/user";
-import { IUser } from "@/typings/user.inter";
+import { IHomeOwnerEntity, UserType } from "@/typings/user.inter";
+import firestore, { firebase } from "@react-native-firebase/firestore";
 
 const PostSchema = Yup.object().shape({
 	title: Yup.string().required("Title is required"),
@@ -25,7 +26,7 @@ const PostSchema = Yup.object().shape({
 
 export default function CreatePostScreen() {
 	const [imageUri, setImageUri] = useState<string | null>(null);
-	const [userData, setUserData] = useState<IUser | null>();
+	const [userData, setUserData] = useState<IHomeOwnerEntity | null>();
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
@@ -34,7 +35,7 @@ export default function CreatePostScreen() {
 			const fetchUser = async () => {
 				setLoading(true);
 				try {
-					const user = await getUser();
+					const user = await getUser<IHomeOwnerEntity>(UserType.homeowner);
 					if (!user) {
 						return;
 					}
@@ -51,15 +52,15 @@ export default function CreatePostScreen() {
 		}
 	}, []);
 
-	const handlePostSubmit = async (values: IPostText) => {
+	const handlePostSubmit = async (values: IPost) => {
+		console.log("Values: ", values);
 		setLoading(true);
 		try {
-			const formattedPost: IPostText = {
+			const postWithUid: IPost = {
 				...values,
 				uid: userData!.uid,
-				createdAt: new Date(),
 			};
-			await CreateNewPost(formattedPost, imageUri);
+			await CreateNewPost(postWithUid, imageUri);
 			// Optionally navigate back or show a success message
 		} catch (error) {
 			console.error("Error creating post: ", error);
@@ -116,10 +117,9 @@ export default function CreatePostScreen() {
 		);
 	};
 
-	const initialValues: IPostText = {
-		description: "",
+	const initialValues: IPost = {
 		uid: "",
-		createdAt: new Date(),
+		description: "",
 		title: "",
 	};
 

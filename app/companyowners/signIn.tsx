@@ -1,49 +1,43 @@
 import { useState } from "react";
-import { Button, Text, TextInput, View, StyleSheet, Image, ActivityIndicator } from "react-native";
-import { Form, Formik } from "formik";
-import * as Yup from "yup";
+import { View, Text, StyleSheet, Button, TextInput, ActivityIndicator, Image } from "react-native";
 import { FirebaseError } from "firebase/app";
+import { Formik } from "formik";
+import * as Yup from "yup";
 import { router } from "expo-router";
-import { IRegisterData } from "@/typings/auth/register.inter";
-import { signUp } from "@/services/auth";
+import { ILoginData } from "@/typings/auth/login.inter";
+import { signIn } from "@/services/auth";
 
 const validationSchema = Yup.object().shape({
-	firstname: Yup.string()
-		.min(2, "First Name must be at least 2 characters")
-		.required("First Name is required"),
-	lastname: Yup.string()
-		.min(2, "Last Name must be at least 2 characters")
-		.required("Last Name is required"),
 	email: Yup.string().email("Invalid email address").required("Email is required"),
 	password: Yup.string()
 		.min(6, "Password must be at least 6 characters")
 		.required("Password is required"),
 });
 
-export default function SignUp() {
+export default function SignIn() {
 	const [loading, setLoading] = useState(false);
 
-	const initialValues: IRegisterData = {
-		firstname: "",
-		lastname: "",
+	const initialValues: ILoginData = {
 		email: "",
 		password: "",
 	};
 
-	const handleSignUp = async (values: IRegisterData) => {
+	const handleSignIn = async (values: ILoginData) => {
 		setLoading(true);
 		try {
-			const user = await signUp(values);
+			await signIn(values);
 		} catch (e: any) {
 			const err = e as FirebaseError;
-			alert("Registration failed: " + err.message);
+			alert("Sign in failed: " + err.message);
+		} finally {
+			setLoading(false);
 		}
-		setLoading(false);
 	};
 	return (
 		<View style={styles.container}>
+			<Text style={{ fontSize: 20, marginBottom: 20 }}>COMPANY OWNER</Text>
 			<Image
-				source={require("../assets/images/Landscape_Connect_Logo.png")}
+				source={require("../../assets/images/Landscape_Connect_Logo.png")}
 				style={{
 					width: 200,
 					height: 200,
@@ -54,32 +48,10 @@ export default function SignUp() {
 			<Formik
 				initialValues={initialValues}
 				validationSchema={validationSchema}
-				onSubmit={handleSignUp}
+				onSubmit={handleSignIn}
 			>
 				{({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
 					<View>
-						<TextInput
-							style={styles.input}
-							placeholder="First Name"
-							onChangeText={handleChange("firstname")}
-							onBlur={handleBlur("firstname")}
-							value={values.firstname}
-						/>
-						{touched.firstname && errors.firstname && (
-							<Text style={styles.errorText}>{errors.firstname}</Text>
-						)}
-
-						<TextInput
-							style={styles.input}
-							placeholder="Last Name"
-							onChangeText={handleChange("lastname")}
-							onBlur={handleBlur("lastname")}
-							value={values.lastname}
-						/>
-						{touched.lastname && errors.lastname && (
-							<Text style={styles.errorText}>{errors.lastname}</Text>
-						)}
-
 						<TextInput
 							style={styles.input}
 							placeholder="Email"
@@ -106,12 +78,12 @@ export default function SignUp() {
 							<ActivityIndicator size="small" color="#0000ff" />
 						) : (
 							<>
-								<Button onPress={handleSubmit as () => void} title="Sign Up" />
+								<Button onPress={handleSubmit as () => void} title="Sign In" />
 								<Button
 									onPress={() => {
-										router.replace("/signIn");
+										router.replace("/companyowners/signUp");
 									}}
-									title="Sign In"
+									title="Sign Up"
 								/>
 							</>
 						)}

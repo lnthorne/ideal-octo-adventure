@@ -1,15 +1,19 @@
-import { IPostText } from "@/typings/post.inter";
-import firestore, { addDoc, collection } from "@react-native-firebase/firestore";
+import { IPost, IPostEntity, JobStatus } from "@/typings/jobs.inter";
+import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 
-export async function CreateNewPost(postText: IPostText, imageUri: string | null) {
+export async function CreateNewPost(newPostContent: IPost, imageUri: string | null) {
 	try {
-		const postDocRef = await firestore()
-			.collection("posts")
-			.add({
-				...postText,
-			});
-		const postId = postDocRef.id;
+		const postRef = firestore().collection("posts").doc();
+		const newPost: IPostEntity = {
+			...newPostContent,
+			pid: postRef.id,
+			createdAt: firestore.FieldValue.serverTimestamp(),
+			jobStatus: JobStatus.open,
+		};
+
+		await postRef.set(newPost);
+		const postId = postRef.id;
 		let imageUrl = null;
 
 		if (imageUri) {
@@ -23,7 +27,7 @@ export async function CreateNewPost(postText: IPostText, imageUri: string | null
 			imageUrl = await imageRef.getDownloadURL();
 
 			// Update the post document with the image URL
-			await postDocRef.update({
+			await postRef.update({
 				imageUrl,
 			});
 		}
@@ -31,6 +35,40 @@ export async function CreateNewPost(postText: IPostText, imageUri: string | null
 		return { postId, imageUrl };
 	} catch (error) {
 		console.error("Error creating post: ", error);
+		throw error;
+	}
+}
+
+export async function fetchOpenJobPosts(): Promise<IPostEntity[]> {
+	try {
+		const postsSnapshot = await firestore()
+			.collection("posts")
+			.where("jobStatus", "==", JobStatus.open)
+			.get();
+
+		const posts = postsSnapshot.docs.map((doc) => {
+			const data = doc.data() as IPostEntity;
+			return data;
+		});
+
+		return posts;
+	} catch (error) {
+		console.error("Error fetching open job posts: ", error);
+		throw error;
+	}
+}
+
+export async function fetchPost(pid: string): Promise<IPostEntity | null> {
+	try {
+		const postDoc = await firestore().collection("posts").doc(pid).get();
+		if (!postDoc.exists) {
+			return null;
+		}
+
+		const postData = postDoc.data() as IPostEntity;
+		return postData;
+	} catch (error) {
+		console.error("Error fetching post: ", error);
 		throw error;
 	}
 }

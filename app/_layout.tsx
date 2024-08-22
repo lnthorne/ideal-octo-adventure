@@ -3,9 +3,11 @@ import { useEffect, useState } from "react";
 import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import { ActivityIndicator, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { identifyUserType } from "@/services/user";
+import { UserType } from "@/typings/user.inter";
 
 export default function RootLayout() {
-	const [initializing, setInitializing] = useState(true);
+	const [initializing, setInitializing] = useState<boolean>(true);
 	const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
 	const [hasOnboarded, setHasOnboarded] = useState<boolean>(false);
 	const router = useRouter();
@@ -34,17 +36,27 @@ export default function RootLayout() {
 	}, []);
 
 	useEffect(() => {
-		if (initializing) return;
+		const checkUserTypeAndRedirect = async () => {
+			if (initializing) return;
 
-		const inAuthGroup = segments[0] === "(auth)";
+			const inAuthGroup = segments[1] === "(auth)";
 
-		if (!user && !hasOnboarded) {
-			router.replace("/onboarding");
-		} else if (user && !inAuthGroup) {
-			router.replace("/(auth)");
-		} else if (!user && inAuthGroup) {
-			router.replace("/signIn");
-		}
+			const userType = await identifyUserType(user?.uid);
+			const pathType = userType === UserType.homeowner ? "homeowners" : "companyowners";
+
+			console.log("User type", userType);
+			console.log("Path type", pathType);
+			console.log("User", user);
+
+			if ((!user && !hasOnboarded) || !userType) {
+				router.replace("/");
+			} else if (user && !inAuthGroup) {
+				router.replace(`/${pathType}/(auth)`);
+			} else if (!user && inAuthGroup) {
+				router.replace(`/${pathType}/signIn`);
+			}
+		};
+		checkUserTypeAndRedirect();
 	}, [user, initializing, hasOnboarded]);
 
 	if (initializing) {
@@ -63,9 +75,7 @@ export default function RootLayout() {
 
 	return (
 		<Stack screenOptions={{ headerShown: false }}>
-			<Stack.Screen name="signIn" options={{ headerShadowVisible: false }} />
-			<Stack.Screen name="onboarding" options={{ headerShadowVisible: false }} />
-			<Stack.Screen name="(auth)" options={{ headerShadowVisible: false }} />
+			<Stack.Screen name="index" options={{ headerShadowVisible: false }} />
 		</Stack>
 	);
 }

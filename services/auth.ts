@@ -3,8 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import firestore from "@react-native-firebase/firestore";
 
 import { ILoginData } from "@/typings/auth/login.inter";
-import { IRegisterData } from "@/typings/auth/register.inter";
-import { IUser } from "@/typings/user.inter";
+import { ICompanyOwner, IHomeOwner, UserType } from "@/typings/user.inter";
 
 export async function signIn(data: ILoginData) {
 	try {
@@ -25,27 +24,27 @@ export async function signOut() {
 	}
 }
 
-export async function signUp(data: IRegisterData): Promise<IUser> {
+export async function signUp<T extends IHomeOwner | ICompanyOwner>(
+	userType: UserType,
+	userData: T
+): Promise<void> {
+	const { email, password } = userData;
 	try {
-		const user = await auth().createUserWithEmailAndPassword(data.email, data.password);
+		const user = await auth().createUserWithEmailAndPassword(email, password);
 		await AsyncStorage.setItem("uid", user.user.uid);
 
-		const formattedData: IUser = {
-			...data,
-			uid: user.user.uid,
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		};
-
 		await firestore()
-			.collection("users")
+			.collection(userType)
 			.doc(user.user.uid)
 			.set({
-				...formattedData,
+				...userData,
+				uid: user.user.uid,
+				createdAt: firestore.FieldValue.serverTimestamp(),
+				updatedAt: firestore.FieldValue.serverTimestamp(),
 			});
-
-		return formattedData;
+		console.log(`${userType} user signed up successfully!`);
 	} catch (error) {
+		console.error("Error signing up user:", error);
 		throw error;
 	}
 }
