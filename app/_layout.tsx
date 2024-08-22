@@ -1,37 +1,71 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+import { Stack, useRouter, useSegments } from "expo-router";
+import { useEffect, useState } from "react";
+import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
+import { ActivityIndicator, View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+	const [initializing, setInitializing] = useState(true);
+	const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
+	const [hasOnboarded, setHasOnboarded] = useState<boolean>(false);
+	const router = useRouter();
+	const segments = useSegments();
 
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+	const onAuthStateChanged = (user: FirebaseAuthTypes.User | null) => {
+		setUser(user);
+		if (initializing) setInitializing(false);
+	};
 
-  if (!loaded) {
-    return null;
-  }
+	// Check if the user has completed onboarding
+	const checkOnboarding = async () => {
+		const onboarded = await AsyncStorage.getItem("hasOnboarded");
+		console.log("Checking onboarding", onboarded);
+		setHasOnboarded(onboarded === "true");
+	};
 
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-    </ThemeProvider>
-  );
+	useEffect(() => {
+		const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+		return subscriber;
+	}, []);
+
+	useEffect(() => {
+		checkOnboarding();
+		console.log("Value of hasOnboarded", hasOnboarded);
+	}, []);
+
+	useEffect(() => {
+		if (initializing) return;
+
+		const inAuthGroup = segments[0] === "(auth)";
+
+		if (!user && !hasOnboarded) {
+			router.replace("/onboarding");
+		} else if (user && !inAuthGroup) {
+			router.replace("/(auth)");
+		} else if (!user && inAuthGroup) {
+			router.replace("/signIn");
+		}
+	}, [user, initializing, hasOnboarded]);
+
+	if (initializing) {
+		return (
+			<View
+				style={{
+					alignItems: "center",
+					justifyContent: "center",
+					flex: 1,
+				}}
+			>
+				<ActivityIndicator size="large" />
+			</View>
+		);
+	}
+
+	return (
+		<Stack screenOptions={{ headerShown: false }}>
+			<Stack.Screen name="signIn" options={{ headerShadowVisible: false }} />
+			<Stack.Screen name="onboarding" options={{ headerShadowVisible: false }} />
+			<Stack.Screen name="(auth)" options={{ headerShadowVisible: false }} />
+		</Stack>
+	);
 }
