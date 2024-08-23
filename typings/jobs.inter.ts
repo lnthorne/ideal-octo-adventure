@@ -16,6 +16,7 @@ export enum BidStatus {
 export interface IBid {
 	pid: string;
 	uid: string; // uid of the company owner
+	companyName: string;
 	bidAmount: number;
 	description: string;
 }
@@ -31,11 +32,12 @@ export interface IPost {
 	title: string;
 	description: string;
 	imageUrl?: string;
-	bids?: string[];
+	bidIds?: string[];
 }
 
 export interface IPostEntity extends IPost {
 	pid: string;
 	jobStatus: JobStatus;
 	createdAt: FirebaseFirestoreTypes.FieldValue;
+	bids?: IBidEntity[];
 }

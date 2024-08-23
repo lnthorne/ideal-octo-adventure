@@ -20,7 +20,7 @@ const BidSchema = Yup.object().shape({
 });
 
 export default function CreateBid() {
-	const [userId, setUserId] = useState<string | null>();
+	const [user, setUser] = useState<ICompanyOwnerEntity | null>();
 	const [loading, setLoading] = useState(true);
 	const { pid } = useLocalSearchParams<{ pid?: string }>();
 	const router = useRouter();
@@ -29,11 +29,11 @@ export default function CreateBid() {
 		const fetchUserId = async () => {
 			setLoading(true);
 			try {
-				const user = await getUserId();
+				const user = await getUser<ICompanyOwnerEntity>(UserType.companyowner);
 				if (!user) {
 					return;
 				}
-				setUserId(user);
+				setUser(user);
 			} catch (error) {
 				console.error("Error fetching user data", error);
 			} finally {
@@ -45,6 +45,7 @@ export default function CreateBid() {
 
 	const initialValues: Omit<IBid, "pid" | "uid"> = {
 		bidAmount: 0,
+		companyName: "",
 		description: "",
 	};
 
@@ -55,7 +56,8 @@ export default function CreateBid() {
 				...values,
 				bidAmount: Number(values.bidAmount),
 				pid: pid!,
-				uid: userId!,
+				uid: user?.uid!,
+				companyName: user?.companyName!,
 			};
 			await submitBid(bid);
 		} catch (error) {
