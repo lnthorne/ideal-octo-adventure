@@ -3,7 +3,8 @@ import { fetchAllOpenJobsWithBids } from "@/services/bid";
 import { getUser } from "@/services/user";
 import { IPostEntity } from "@/typings/jobs.inter";
 import { IHomeOwnerEntity, UserType } from "@/typings/user.inter";
-import React, { useEffect, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Text, View, StyleSheet, FlatList } from "react-native";
 
 export default function HomeScreen() {
@@ -29,24 +30,27 @@ export default function HomeScreen() {
 		fetchUser();
 	}, []);
 
-	useEffect(() => {
-		if (!userData) return;
-		console.log("Fetching jobs and bids for user:", userData.uid);
+	useFocusEffect(
+		useCallback(() => {
+			if (!userData) return;
 
-		const fetchJobsAndBids = async () => {
-			setLoading(true);
-			try {
-				const jobs = await fetchAllOpenJobsWithBids(userData.uid);
-				setJobsWithBids(jobs);
-			} catch (error) {
-				console.error("Failed to fetch jobs and bids:", error);
-			} finally {
-				setLoading(false);
-			}
-		};
+			console.log("Fetching jobs and bids for user:", userData.uid);
 
-		fetchJobsAndBids();
-	}, [userData]);
+			const fetchJobsAndBids = async () => {
+				setLoading(true);
+				try {
+					const jobs = await fetchAllOpenJobsWithBids(userData.uid);
+					setJobsWithBids(jobs);
+				} catch (error) {
+					console.error("Failed to fetch jobs and bids:", error);
+				} finally {
+					setLoading(false);
+				}
+			};
+
+			fetchJobsAndBids();
+		}, [userData])
+	);
 
 	if (loading) {
 		return <ActivityIndicator size={"large"} />;

@@ -67,7 +67,7 @@ export default function CreatePostScreen() {
 			console.error("Error creating post: ", error);
 		} finally {
 			setLoading(false);
-			router.push("/homeowners/(auth)");
+			router.back();
 		}
 	};
 

@@ -75,7 +75,9 @@ export default function RootLayout() {
 
 	return (
 		<Stack screenOptions={{ headerShown: false }}>
-			<Stack.Screen name="index" options={{ headerShadowVisible: false }} />
+			<Stack.Screen name="index" />
+			<Stack.Screen name="companyowners" />
+			<Stack.Screen name="homeowners" />
 		</Stack>
 	);
 }

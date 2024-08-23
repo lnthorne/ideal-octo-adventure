@@ -81,7 +81,7 @@ export default function SignIn() {
 								<Button onPress={handleSubmit as () => void} title="Sign In" />
 								<Button
 									onPress={() => {
-										router.replace("/homeowners/signUp");
+										router.push("/homeowners/signUp");
 									}}
 									title="Sign Up"
 								/>

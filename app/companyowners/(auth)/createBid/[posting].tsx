@@ -53,7 +53,7 @@ export default function CreateBidScreen() {
 			<Button
 				title="BID"
 				onPress={() => {
-					router.push(`/companyowners/createBid/createBid?pid=${posting}`);
+					router.push(`/companyowners/createBid/createBidPage?pid=${posting}`);
 				}}
 			/>
 		</View>
