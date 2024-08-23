@@ -1,5 +1,5 @@
 // app/home/createPost.tsx
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
 	View,
 	Text,
@@ -8,27 +8,53 @@ import {
 	FlatList,
 	TouchableOpacity,
 } from "react-native";
-import { fetchOpenJobPosts } from "@/services/post";
+import { fetchOpenJobPostsNotBidOn } from "@/services/post";
 import { IPostEntity } from "@/typings/jobs.inter";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
+import { getUserId } from "@/services/user";
 
 export default function ViewPostsScreen() {
 	const [posts, setPosts] = useState<IPostEntity[]>([]);
+	const [userId, setUserId] = useState<string | null>(null);
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
-		const loadPosts = async () => {
+		const fetchUser = async () => {
+			setLoading(true);
 			try {
-				const openPosts = await fetchOpenJobPosts();
-				setPosts(openPosts);
+				const uid = await getUserId();
+				if (!uid) {
+					console.error("No user id found");
+					return;
+				}
+				setUserId(uid);
 			} catch (error) {
-				console.error("Error fetching posts", error);
+				console.error("Error fetching user data", error);
 			} finally {
 				setLoading(false);
 			}
 		};
-		loadPosts();
+		fetchUser();
 	}, []);
+
+	useFocusEffect(
+		useCallback(() => {
+			if (!userId) return;
+
+			const loadPosts = async () => {
+				setLoading(true);
+				try {
+					const openPosts = await fetchOpenJobPostsNotBidOn(userId);
+					setPosts(openPosts);
+				} catch (error) {
+					console.error("Error fetching posts", error);
+				} finally {
+					setLoading(false);
+				}
+			};
+			loadPosts();
+		}, [userId])
+	);
 
 	const handlePostPress = (pid: string) => {
 		router.push(`/companyowners/createBid/${pid}`);

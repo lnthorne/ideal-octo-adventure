@@ -1,4 +1,4 @@
-import { IPost, IPostEntity, JobStatus } from "@/typings/jobs.inter";
+import { IBidEntity, IPost, IPostEntity, JobStatus } from "@/typings/jobs.inter";
 import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 
@@ -39,7 +39,7 @@ export async function CreateNewPost(newPostContent: IPost, imageUri: string | nu
 	}
 }
 
-export async function fetchOpenJobPosts(): Promise<IPostEntity[]> {
+export async function fetchAllOpenJobPosts(): Promise<IPostEntity[]> {
 	try {
 		const postsSnapshot = await firestore()
 			.collection("posts")
@@ -50,6 +50,34 @@ export async function fetchOpenJobPosts(): Promise<IPostEntity[]> {
 			const data = doc.data() as IPostEntity;
 			return data;
 		});
+
+		return posts;
+	} catch (error) {
+		console.error("Error fetching open job posts: ", error);
+		throw error;
+	}
+}
+
+export async function fetchOpenJobPostsNotBidOn(uid: string): Promise<IPostEntity[]> {
+	try {
+		const userBidsSnapshot = await firestore().collection("bids").where("uid", "==", uid).get();
+
+		const jobIdsWithUserBids = userBidsSnapshot.docs.map((doc) => {
+			const bid = doc.data() as IBidEntity;
+			return bid.pid;
+		});
+
+		const postsSnapshot = await firestore()
+			.collection("posts")
+			.where("jobStatus", "==", JobStatus.open)
+			.get();
+
+		const posts = postsSnapshot.docs
+			.map((doc) => {
+				const data = doc.data() as IPostEntity;
+				return data;
+			})
+			.filter((post) => !jobIdsWithUserBids.includes(post.pid)); // Filter out jobs with the same ID as in `jobIdsWithUserBids`
 
 		return posts;
 	} catch (error) {

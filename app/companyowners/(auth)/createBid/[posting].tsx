@@ -53,6 +53,7 @@ export default function CreateBidScreen() {
 			console.error("Error submitting bid", error);
 		} finally {
 			setModalVisible(false);
+			router.navigate("/companyowners/(tabs)/viewPosts");
 		}
 		console.log("Bid Submitted", { bidAmount, bidDescription });
 	};

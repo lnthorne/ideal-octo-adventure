@@ -18,5 +18,6 @@
 ### Aug 23, 2024
 
 - Updated and corrected the file structure and routing
-- Homeowner can now accept bids. When a bid is accepted the post is set to in progress and all other competeing bids are set to rejected
-- The companyowner can now click on his bids and view the details of both the job and the bid
+- Homeowner can now accept bids. When a bid is accepted the post is set to in progress and all other competeing bids are set to rejected.
+- The companyowner can now click on his bids and view the details of both the job and the bid. Also, new modal for bidding on a job. When you bid on a project, you can no longer view it in the "View Posts" page. It gets moved to the home screen
+- **What needs to be done next:** Need some database rules (deletion, waterfall), abilty to upload multiple photos per job posting, completing the schema for our data

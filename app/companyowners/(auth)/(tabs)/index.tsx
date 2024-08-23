@@ -24,6 +24,7 @@ export default function HomeScreen() {
 			try {
 				const user = await getUser<ICompanyOwnerEntity>(UserType.companyowner);
 				if (!user) {
+					console.error("No user found");
 					return;
 				}
 				setUserData(user);
