@@ -18,6 +18,7 @@ import { IPost, JobStatus } from "@/typings/jobs.inter";
 import { getUser } from "@/services/user";
 import { IHomeOwnerEntity, UserType } from "@/typings/user.inter";
 import firestore, { firebase } from "@react-native-firebase/firestore";
+import { router } from "expo-router";
 
 const PostSchema = Yup.object().shape({
 	title: Yup.string().required("Title is required"),
@@ -66,6 +67,7 @@ export default function CreatePostScreen() {
 			console.error("Error creating post: ", error);
 		} finally {
 			setLoading(false);
+			router.push("/homeowners/(auth)");
 		}
 	};
 
