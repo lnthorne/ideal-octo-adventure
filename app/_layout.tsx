@@ -1,4 +1,4 @@
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Stack, useSegments, router } from "expo-router";
 import { useEffect, useState } from "react";
 import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import { ActivityIndicator, View } from "react-native";
@@ -10,7 +10,6 @@ export default function RootLayout() {
 	const [initializing, setInitializing] = useState<boolean>(true);
 	const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
 	const [hasOnboarded, setHasOnboarded] = useState<boolean>(false);
-	const router = useRouter();
 	const segments = useSegments();
 
 	const onAuthStateChanged = (user: FirebaseAuthTypes.User | null) => {
@@ -39,20 +38,16 @@ export default function RootLayout() {
 		const checkUserTypeAndRedirect = async () => {
 			if (initializing) return;
 
-			const inAuthGroup = segments[1] === "(auth)";
+			// const inAuthGroup = segments[1] === "(auth)";
 
 			const userType = await identifyUserType(user?.uid);
 			const pathType = userType === UserType.homeowner ? "homeowners" : "companyowners";
 
-			console.log("User type", userType);
-			console.log("Path type", pathType);
-			console.log("User", user);
-
 			if ((!user && !hasOnboarded) || !userType) {
 				router.replace("/");
-			} else if (user && !inAuthGroup) {
+			} else if (user) {
 				router.replace(`/${pathType}/(auth)`);
-			} else if (!user && inAuthGroup) {
+			} else if (!user) {
 				router.replace(`/${pathType}/signIn`);
 			}
 		};
@@ -76,8 +71,6 @@ export default function RootLayout() {
 	return (
 		<Stack screenOptions={{ headerShown: false }}>
 			<Stack.Screen name="index" />
-			<Stack.Screen name="companyowners" />
-			<Stack.Screen name="homeowners" />
 		</Stack>
 	);
 }

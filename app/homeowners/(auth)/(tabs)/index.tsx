@@ -3,9 +3,17 @@ import { fetchAllOpenJobsWithBids } from "@/services/bid";
 import { getUser } from "@/services/user";
 import { IPostEntity } from "@/typings/jobs.inter";
 import { IHomeOwnerEntity, UserType } from "@/typings/user.inter";
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Text, View, StyleSheet, FlatList } from "react-native";
+import {
+	ActivityIndicator,
+	Text,
+	View,
+	StyleSheet,
+	FlatList,
+	Touchable,
+	TouchableOpacity,
+} from "react-native";
 
 export default function HomeScreen() {
 	const [userData, setUserData] = useState<IHomeOwnerEntity | null>();
@@ -34,8 +42,6 @@ export default function HomeScreen() {
 		useCallback(() => {
 			if (!userData) return;
 
-			console.log("Fetching jobs and bids for user:", userData.uid);
-
 			const fetchJobsAndBids = async () => {
 				setLoading(true);
 				try {
@@ -52,6 +58,10 @@ export default function HomeScreen() {
 		}, [userData])
 	);
 
+	const handleBidPress = (bid: string) => {
+		router.push(`/homeowners/bidDetails/${bid}`);
+	};
+
 	if (loading) {
 		return <ActivityIndicator size={"large"} />;
 	}
@@ -67,12 +77,14 @@ export default function HomeScreen() {
 						<Text style={styles.bidsTitle}>Bids:</Text>
 						{item.bids && item.bids.length > 0 ? (
 							item.bids.map((bid) => (
-								<View key={bid.bid} style={styles.bidContainer}>
-									<Text>Company Name: {bid.companyName}</Text>
-									<Text>Bid Amount: ${bid.bidAmount}</Text>
-									<Text>Description: {bid.description}</Text>
-									<Text>Status: {bid.status}</Text>
-								</View>
+								<TouchableOpacity key={bid.bid} onPress={() => handleBidPress(bid.bid)}>
+									<View style={styles.bidContainer}>
+										<Text>Company Name: {bid.companyName}</Text>
+										<Text>Bid Amount: ${bid.bidAmount}</Text>
+										<Text>Description: {bid.description}</Text>
+										<Text>Status: {bid.status}</Text>
+									</View>
+								</TouchableOpacity>
 							))
 						) : (
 							<Text>No bids available for this post.</Text>

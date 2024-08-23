@@ -3,7 +3,7 @@ import { Text, View } from "react-native";
 
 export default function HomeLayout() {
 	return (
-		<Tabs>
+		<Tabs screenOptions={{ headerShown: true }}>
 			<Tabs.Screen
 				name="index"
 				options={{

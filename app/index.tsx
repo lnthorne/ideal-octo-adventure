@@ -9,13 +9,13 @@ export default function Onboarding() {
 	const handleLandscaperOnboarding = async () => {
 		await AsyncStorage.setItem("hasOnboarded", "true");
 		await AsyncStorage.setItem("userType", "companyowner");
-		router.push("/companyowners/signIn");
+		router.replace("/companyowners/signIn");
 	};
 
 	const handleHomeownerOnboarding = async () => {
 		await AsyncStorage.setItem("hasOnboarded", "true");
 		await AsyncStorage.setItem("userType", "homeowner");
-		router.push("/homeowners/signIn");
+		router.replace("/homeowners/signIn");
 	};
 
 	return (

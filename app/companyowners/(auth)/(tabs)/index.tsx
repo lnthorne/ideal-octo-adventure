@@ -3,7 +3,8 @@ import { fetchBidsFromUid } from "@/services/bid";
 import { getUser } from "@/services/user";
 import { IBidEntity } from "@/typings/jobs.inter";
 import { ICompanyOwnerEntity, IHomeOwnerEntity, UserType } from "@/typings/user.inter";
-import React, { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
 	ActivityIndicator,
 	Text,
@@ -18,7 +19,7 @@ export default function HomeScreen() {
 	const [bidData, setBidData] = useState<IBidEntity[] | null>();
 	const [loading, setLoading] = useState(true);
 	useEffect(() => {
-		const fetchUserAndBids = async () => {
+		const fetchUser = async () => {
 			setLoading(true);
 			try {
 				const user = await getUser<ICompanyOwnerEntity>(UserType.companyowner);
@@ -26,21 +27,37 @@ export default function HomeScreen() {
 					return;
 				}
 				setUserData(user);
-
-				const bids = await fetchBidsFromUid(user.uid);
-
-				if (!bids) {
-					return;
-				}
-				setBidData(bids);
 			} catch (error) {
 				console.error("Error fetching user data", error);
 			} finally {
 				setLoading(false);
 			}
 		};
-		fetchUserAndBids();
+		fetchUser();
 	}, []);
+
+	useFocusEffect(
+		useCallback(() => {
+			if (!userData) return;
+
+			const fetchBids = async () => {
+				setLoading(true);
+				try {
+					const bids = await fetchBidsFromUid(userData.uid);
+					setBidData(bids);
+				} catch (error) {
+					console.error("Failed to fetch bids:", error);
+				} finally {
+					setLoading(false);
+				}
+			};
+			fetchBids();
+		}, [userData])
+	);
+
+	const handleBidPress = (bid: string) => {
+		router.push(`/companyowners/bidDetails/${bid}`);
+	};
 
 	if (loading) {
 		return <ActivityIndicator size={"large"} />;
@@ -54,7 +71,7 @@ export default function HomeScreen() {
 				data={bidData}
 				keyExtractor={(item) => item.pid}
 				renderItem={({ item }) => (
-					<TouchableOpacity onPress={() => {}}>
+					<TouchableOpacity onPress={() => handleBidPress(item.bid)}>
 						<View style={styles.postContainer}>
 							<Text style={styles.title}>${item.bidAmount}</Text>
 							<Text style={styles.description}>{item.description}</Text>

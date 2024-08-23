@@ -16,3 +16,7 @@
 - **What needs to be done next:** The homeowner should be able to look at their open job postings and see the bids that have been made. The homeowner can then decline or accpet the bids. The companyowner can view past bids and current open bids. There needs to be a full screen for viewing bids from the homeowner. Also, need some database rules (deletion, waterfall)
 
 ### Aug 23, 2024
+
+- Updated and corrected the file structure and routing
+- Homeowner can now accept bids. When a bid is accepted the post is set to in progress and all other competeing bids are set to rejected
+- The companyowner can now click on his bids and view the details of both the job and the bid

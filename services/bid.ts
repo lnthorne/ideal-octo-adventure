@@ -1,4 +1,4 @@
-import { BidStatus, IBid, IBidEntity, IPostEntity } from "@/typings/jobs.inter";
+import { BidStatus, IBid, IBidEntity, IPostEntity, JobStatus } from "@/typings/jobs.inter";
 import firestore from "@react-native-firebase/firestore";
 
 export async function submitBid(bidData: IBid): Promise<void> {
@@ -24,6 +24,18 @@ export async function submitBid(bidData: IBid): Promise<void> {
 		console.log("Bid submitted successfully:", newBid);
 	} catch (error) {
 		console.error("Error submitting bid:", error);
+		throw error;
+	}
+}
+
+export async function fetchBidFromBid(bid: string): Promise<IBidEntity> {
+	try {
+		const bidDoc = await firestore().collection("bids").doc(bid).get();
+		const bidData = bidDoc.data() as IBidEntity;
+
+		return bidData;
+	} catch (error) {
+		console.error("Error fetching bid:", error);
 		throw error;
 	}
 }
@@ -71,6 +83,36 @@ export async function fetchAllOpenJobsWithBids(uid: string = ""): Promise<IPostE
 		return posts;
 	} catch (error) {
 		console.error("Error fetching jobs with bids:", error);
+		throw error;
+	}
+}
+
+export async function acceptBidAndCloseOtherBids(bid: string, pid: string): Promise<void> {
+	console.log("bid and pid", bid, pid);
+	const firestoreInstance = firestore();
+	const batch = firestoreInstance.batch();
+	try {
+		const bidRef = firestoreInstance.collection("bids").doc(bid);
+		console.log("bidRef", bidRef);
+		batch.update(bidRef, { status: BidStatus.accepted });
+
+		const postRef = firestoreInstance.collection("posts").doc(pid);
+		batch.update(postRef, { jobStatus: JobStatus.inprogress });
+
+		const otherBidsSnapshot = await firestoreInstance
+			.collection("bids")
+			.where("pid", "==", pid)
+			.where(firestore.FieldPath.documentId(), "!=", bid)
+			.get();
+
+		otherBidsSnapshot.forEach((doc) => {
+			batch.update(doc.ref, { status: BidStatus.rejected });
+		});
+
+		await batch.commit();
+		console.log("Bid accepted and job closed successfully");
+	} catch (error) {
+		console.error("Error accepting bid and closing job:", error);
 		throw error;
 	}
 }
