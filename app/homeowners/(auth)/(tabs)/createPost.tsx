@@ -17,7 +17,6 @@ import * as ImagePicker from "expo-image-picker";
 import { IPost, JobStatus } from "@/typings/jobs.inter";
 import { getUser } from "@/services/user";
 import { IHomeOwnerEntity, UserType } from "@/typings/user.inter";
-import firestore, { firebase } from "@react-native-firebase/firestore";
 import { router } from "expo-router";
 
 const PostSchema = Yup.object().shape({

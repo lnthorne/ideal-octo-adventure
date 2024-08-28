@@ -20,4 +20,12 @@
 - Updated and corrected the file structure and routing
 - Homeowner can now accept bids. When a bid is accepted the post is set to in progress and all other competeing bids are set to rejected.
 - The companyowner can now click on his bids and view the details of both the job and the bid. Also, new modal for bidding on a job. When you bid on a project, you can no longer view it in the "View Posts" page. It gets moved to the home screen
-- **What needs to be done next:** Need some database rules (deletion, waterfall), abilty to upload multiple photos per job posting, completing the schema for our data
+- **What needs to be done next:** Need some database rules (deletion, waterfall), abilty to upload multiple photos per job posting, completing the schema for our data, I want the homeowner to be able to send a DM to the company when they are checking out the bids (NOTE: only the homeowner can start the conversation)
+
+### Aug 24, 2024
+
+- Build is not working for some reason
+- [LandScapeConnect24] Compiling JS failed: 90900:3:export declaration must be at top level of module Buffer size 7817910 starts with: 766172205f5f42554e444c455f535441
+- What I have done to try to fix:
+  - Removed .expo, ios, android dir's and re-built. Removed caches and re installed NPM packages.
+  - Maybe something to do with expo router? Maybe something to do with Metro bundling. Here is a link that was brought up in a post that helped debug an issue where there was no index in the root(http://localhost:8081/index.bundle?platform=ios&dev=true&minify=false&modulesOnly=false&runModule=true). NOTE: I did change in the app.json the entry point.

@@ -12,6 +12,7 @@
 			"resizeMode": "contain",
 			"backgroundColor": "#ffffff"
 		},
+		"entryPoint": "./app/index.ts",
 		"ios": {
 			"supportsTablet": true,
 			"bundleIdentifier": "com.LTSS.LandscapeConnect",

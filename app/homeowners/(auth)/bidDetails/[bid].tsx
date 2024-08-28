@@ -4,7 +4,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { acceptBidAndCloseOtherBids, fetchBidFromBid } from "@/services/bid";
 import { IBidEntity } from "@/typings/jobs.inter";
 
-const BidDetails = () => {
+export default function BidDetails() {
 	const { bid } = useLocalSearchParams<{ bid: string }>();
 	const [bidDetails, setBidDetails] = useState<IBidEntity | null>(null);
 
@@ -28,7 +28,7 @@ const BidDetails = () => {
 		try {
 			await acceptBidAndCloseOtherBids(bidDetails.bid, bidDetails.pid);
 			Alert.alert("Bid accepted successfully!");
-			router.replace("/companyowners/(auth)/(tabs)");
+			router.replace("/homeowners/(auth)/(tabs)");
 		} catch (error) {
 			console.error("Failed to accept bid:", error);
 			Alert.alert("Failed to accept bid. Please try again.");
@@ -56,9 +56,7 @@ const BidDetails = () => {
 			</View>
 		</View>
 	);
-};
-
-export default BidDetails;
+}
 
 const styles = StyleSheet.create({
 	container: {

@@ -10,7 +10,6 @@ export default function RootLayout() {
 	const [initializing, setInitializing] = useState<boolean>(true);
 	const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
 	const [hasOnboarded, setHasOnboarded] = useState<boolean>(false);
-	const segments = useSegments();
 
 	const onAuthStateChanged = (user: FirebaseAuthTypes.User | null) => {
 		setUser(user);
